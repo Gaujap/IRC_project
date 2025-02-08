@@ -148,6 +148,16 @@ io.on('connection', (socket) => {
 
         socket.emit('updateChannels', [...publicChannels, ...privateChannels]);
     });
+
+    socket.on('createChannel', (channelName) => {
+        if (!channels[channelName]) {
+            channels[channelName] = [];
+            io.emit('updateChannels', Object.keys(channels));
+            socket.emit('chat message', { text: `Channel ${channelName} created.`, timestamp: new Date().toISOString(), channel: 'general' });
+        } else {
+            socket.emit('error', `Channel ${channelName} already exists.`);
+        }
+    });
 });
 
 server.listen(5000, () => console.log('Server running on port 5000'));
