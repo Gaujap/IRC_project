@@ -61,6 +61,13 @@ io.on('connection', (socket) => {
         const messages = await Message.find({ channel }).sort({ timestamp: 1 });
         socket.emit('initial messages', messages);
     });
+
+    socket.on('quitChannel', (channel) => {
+        if (!userChannels[userPseudo]) return;
+        userChannels[userPseudo] = userChannels[userPseudo].filter(c => c !== channel);
+        socket.leave(channel);
+        socket.emit('updateUserChannels', userChannels[userPseudo]);
+    });
 });
 
 server.listen(5000, () => console.log('Server running on port 5000'));
