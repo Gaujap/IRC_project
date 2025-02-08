@@ -22,6 +22,21 @@ const Chat: React.FC = () => {
         }
     }, [messages]);
 
+    useEffect(() => {
+        socket.on('usersListResponse', (userList) => {
+            const tempMessage = { text: `Connected users: ${userList.join(', ')}`, pseudo: 'System' };
+            setMessages((prevMessages) => [...prevMessages, tempMessage]);
+
+            setTimeout(() => {
+                setMessages((prevMessages) => prevMessages.filter(msg => msg !== tempMessage));
+            }, 5000);
+        });
+
+        return () => {
+            socket.off('usersListResponse');
+        };
+    }, []);
+
     return (
     );
 };
