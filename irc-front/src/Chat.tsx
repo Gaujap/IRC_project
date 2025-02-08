@@ -6,6 +6,7 @@ const socket = io('https://irc-wzmf.onrender.com');
 
 const Chat: React.FC = () => {
     const [messages, setMessages] = useState<{ text: string; pseudo: string}[]>([]);
+    const [input, setInput] = useState<string>('');
     const [channels, setChannels] = useState<string[]>([]);
     const [currentChannel, setCurrentChannel] = useState<string>('general');
     const [pseudo, setPseudo] = useState<string>('');
@@ -84,6 +85,60 @@ const Chat: React.FC = () => {
     const handlePseudoChange = (e: React.FormEvent) => {
         e.preventDefault();
         socket.emit('setPseudo', pseudo);
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!isPseudoSet) {
+            alert('Please set a pseudo before sending a message.');
+            return;
+        }
+
+        const parts = input.split(' ');
+        const command = parts[0];
+        const param = parts.slice(1).join(' ');
+
+        switch (command) {
+            case '/nick':
+                socket.emit('setPseudo', param);
+                break;
+            case '/list':
+                socket.emit('listChannels');
+                break;
+            case '/create':
+                socket.emit('createChannel', param);
+                break;
+            case '/delete':
+                socket.emit('deleteChannel', param);
+                break;
+            case '/join':
+                handleChannelChange(param);
+                break;
+            case '/quit':
+                socket.emit('quitChannel', param);
+                setUserChannels((prev) => prev.filter(c => c !== param));
+                handleChannelChange('general');
+                break;
+            case '/users':
+                socket.emit('listUsers');
+                break;
+            case '/add':
+                socket.emit('addChannel', param);
+                break;
+            case '/msg':
+                const [target, ...msgParts] = param.split(' ');
+                const msgContent = msgParts.join(' ');
+                const privateChannel = [pseudo, target].sort().join('_');
+
+                socket.emit('createPrivateChannel', { privateChannel, target, message: msgContent });
+                handleChannelChange(privateChannel);
+                break;
+            default:
+                socket.emit('chat message', { channel: currentChannel, message: input });
+        }
+
+        setInput('');
     };
 
     return (
