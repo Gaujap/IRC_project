@@ -158,6 +158,16 @@ io.on('connection', (socket) => {
             socket.emit('error', `Channel ${channelName} already exists.`);
         }
     });
+
+    socket.on('deleteChannel', (channelName) => {
+        if (channels[channelName]) {
+            delete channels[channelName];
+            io.emit('updateChannels', Object.keys(channels));
+            socket.emit('chat message', { text: `Channel ${channelName} deleted.`, timestamp: new Date().toISOString(), channel: 'general' });
+        } else {
+            socket.emit('error', `Channel ${channelName} does not exist.`);
+        }
+    });
 });
 
 server.listen(5000, () => console.log('Server running on port 5000'));
