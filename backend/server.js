@@ -75,6 +75,22 @@ io.on('connection', (socket) => {
             socket.emit('updateUserChannels', userChannels[userPseudo]);
         }
     });
+
+    socket.on('chat message', ({ channel, message }) => {
+        const msg = new Message({ text: message, channel, pseudo: userPseudo });
+        msg.save();
+
+        if (channel.includes('_')) {
+            const [user1, user2] = channel.split('_');
+            const user1SocketId = Object.keys(connectedUsers).find(id => connectedUsers[id] === user1);
+            const user2SocketId = Object.keys(connectedUsers).find(id => connectedUsers[id] === user2);
+
+            if (user1SocketId) io.to(user1SocketId).emit('chat message', { text: message, pseudo: userPseudo, channel });
+            if (user2SocketId) io.to(user2SocketId).emit('chat message', { text: message, pseudo: userPseudo, channel });
+        } else {
+            io.to(channel).emit('chat message', { text: message, pseudo: userPseudo, channel });
+        }
+    });
 });
 
 server.listen(5000, () => console.log('Server running on port 5000'));
