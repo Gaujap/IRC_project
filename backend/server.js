@@ -139,6 +139,15 @@ io.on('connection', (socket) => {
     socket.on('listUsers', () => {
         socket.emit('usersListResponse', Object.values(connectedUsers));
     });
+
+    socket.on('listChannels', () => {
+        const publicChannels = Object.keys(channels).filter(channel => !channel.includes('_'));
+        const privateChannels = Object.keys(channels).filter(channel =>
+            channel.includes('_') && channel.split('_').includes(userPseudo)
+        );
+
+        socket.emit('updateChannels', [...publicChannels, ...privateChannels]);
+    });
 });
 
 server.listen(5000, () => console.log('Server running on port 5000'));
