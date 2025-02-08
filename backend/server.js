@@ -29,4 +29,20 @@ const messageSchema = new mongoose.Schema({
 });
 const Message = mongoose.model('Message', messageSchema);
 
+const userChannels = {};
+const connectedUsers = {};
+
+io.on('connection', (socket) => {
+    let userPseudo = null;
+
+    socket.on('setPseudo', (pseudo) => {
+        if (!pseudo.trim()) return socket.emit('error', 'Pseudo cannot be empty');
+        userPseudo = pseudo;
+        connectedUsers[socket.id] = userPseudo;
+        userChannels[pseudo] = userChannels[pseudo] || ["general"];
+        socket.emit('pseudoSet', userPseudo);
+        socket.emit('updateUserChannels', userChannels[pseudo]);
+    });
+});
+
 server.listen(5000, () => console.log('Server running on port 5000'));
