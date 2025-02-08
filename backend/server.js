@@ -29,6 +29,7 @@ const messageSchema = new mongoose.Schema({
 });
 const Message = mongoose.model('Message', messageSchema);
 
+let channels = { general: [] };
 const userChannels = {};
 const connectedUsers = {};
 
@@ -42,6 +43,23 @@ io.on('connection', (socket) => {
         userChannels[pseudo] = userChannels[pseudo] || ["general"];
         socket.emit('pseudoSet', userPseudo);
         socket.emit('updateUserChannels', userChannels[pseudo]);
+    });
+
+    socket.on('joinChannel', async (channel) => {
+        if (!channels[channel]) {
+            return socket.emit('error', `Channel "${channel}" does not exist.`);
+        }
+
+        if (channel.includes('_')) {
+            const [user1, user2] = channel.split('_');
+            if (userPseudo !== user1 && userPseudo !== user2) {
+                return socket.emit('error', 'You do not have permission to join this private channel.');
+            }
+        }
+
+        socket.join(channel);
+        const messages = await Message.find({ channel }).sort({ timestamp: 1 });
+        socket.emit('initial messages', messages);
     });
 });
 
