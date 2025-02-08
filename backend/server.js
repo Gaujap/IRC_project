@@ -104,6 +104,37 @@ io.on('connection', (socket) => {
             socket.emit('error', `User ${pseudo} not found.`);
         }
     });
+
+    socket.on('createPrivateChannel', ({ privateChannel, target, message }) => {
+        if (!channels[privateChannel]) {
+            channels[privateChannel] = [];
+        }
+
+        const targetSocketId = Object.keys(connectedUsers).find(id => connectedUsers[id] === target);
+        if (!targetSocketId) {
+            return socket.emit('error', `User ${target} not found.`);
+        }
+
+        userChannels[userPseudo] = userChannels[userPseudo] || [];
+        userChannels[target] = userChannels[target] || [];
+
+        if (!userChannels[userPseudo].includes(privateChannel)) {
+            userChannels[userPseudo].push(privateChannel);
+        }
+        if (!userChannels[target].includes(privateChannel)) {
+            userChannels[target].push(privateChannel);
+        }
+
+        socket.join(privateChannel);
+        io.to(targetSocketId).emit('updateUserChannels', userChannels[target]);
+        io.to(socket.id).emit('updateUserChannels', userChannels[userPseudo]);
+
+        if (message) {
+            const msg = new Message({ text: message, channel: privateChannel, pseudo: userPseudo });
+            msg.save();
+            io.to(privateChannel).emit('chat message', { text: message, pseudo: userPseudo, channel: privateChannel });
+        }
+    });
 });
 
 server.listen(5000, () => console.log('Server running on port 5000'));
