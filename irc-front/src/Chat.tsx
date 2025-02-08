@@ -141,6 +141,11 @@ const Chat: React.FC = () => {
         setInput('');
     };
 
+    const handleChannelChange = (channel: string) => {
+        setCurrentChannel(channel);
+        socket.emit('joinChannel', channel);
+    };
+
     return (
     );
 };
