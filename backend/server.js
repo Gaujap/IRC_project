@@ -135,6 +135,10 @@ io.on('connection', (socket) => {
             io.to(privateChannel).emit('chat message', { text: message, pseudo: userPseudo, channel: privateChannel });
         }
     });
+
+    socket.on('listUsers', () => {
+        socket.emit('usersListResponse', Object.values(connectedUsers));
+    });
 });
 
 server.listen(5000, () => console.log('Server running on port 5000'));
