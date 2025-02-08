@@ -6,8 +6,11 @@ const socket = io('https://irc-wzmf.onrender.com');
 
 const Chat: React.FC = () => {
     const [messages, setMessages] = useState<{ text: string; pseudo: string}[]>([]);
+    const [channels, setChannels] = useState<string[]>([]);
+    const [currentChannel, setCurrentChannel] = useState<string>('general');
     const [pseudo, setPseudo] = useState<string>('');
     const [isPseudoSet, setIsPseudoSet] = useState<boolean>(false);
+    const [userChannels, setUserChannels] = useState<string[]>(["general"]);
     const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -36,6 +39,47 @@ const Chat: React.FC = () => {
             socket.off('usersListResponse');
         };
     }, []);
+
+    useEffect(() => {
+        socket.on('updateChannels', (fetchedChannels) => {
+            setChannels(fetchedChannels);
+        });
+
+        socket.on('initial messages', (fetchedMessages) => {
+            setMessages(fetchedMessages);
+        });
+
+        socket.on('chat message', (newMessage) => {
+            if (newMessage.channel === currentChannel) {
+                setMessages((prevMessages) => [...prevMessages, newMessage]);
+            }
+        });
+
+        socket.on('pseudoSet', (newPseudo) => {
+            setPseudo(newPseudo);
+            setIsPseudoSet(true);
+            localStorage.setItem('pseudo', newPseudo);
+        });
+
+        socket.on('updateUserChannels', (userChannelsList) => {
+            setUserChannels(userChannelsList);
+        });
+
+        socket.on('error', (errorMessage) => {
+            alert(errorMessage);
+        });
+
+        socket.emit('joinChannel', currentChannel);
+
+        return () => {
+            socket.off('updateChannels');
+            socket.off('initial messages');
+            socket.off('chat message');
+            socket.off('pseudoSet');
+            socket.off('updateUserChannels');
+            socket.off('error');
+        };
+    }, [currentChannel]);
 
     return (
     );
