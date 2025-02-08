@@ -147,6 +147,54 @@ const Chat: React.FC = () => {
     };
 
     return (
+        <div>
+            {!isPseudoSet ? (
+                <form id="set-pseudo-form" onSubmit={handlePseudoChange}>
+                    <input type="text" placeholder="Enter your pseudo" value={pseudo} onChange={(e) => setPseudo(e.target.value)} />
+                    <button type="submit">Set Pseudo</button>
+                </form>
+            ) : (
+                <>
+                    <div id="chat-container">
+                        <div id="channels">
+                            <h3>Public Channels</h3>
+                            <ul>
+                                {channels.map(channel => (
+                                    <li key={channel} onClick={() => handleChannelChange(channel)}
+                                        style={{fontWeight: channel === currentChannel ? 'bold' : 'normal'}}>
+                                        {channel}
+                                    </li>
+                                ))}
+                            </ul>
+
+                            <h3>Your Channels</h3>
+                            <ul>
+                                {userChannels.map(channel => (
+                                    <li key={channel} onClick={() => handleChannelChange(channel)} style={{ fontWeight: channel === currentChannel ? 'bold' : 'normal' }}>
+                                        {channel}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div id="chat">
+                            <ul id="messages">
+                                {messages.map((msg, index) => (
+                                    <li key={index} className={msg.pseudo === 'System' ? 'system' : ''}>
+                                        <strong>{msg.pseudo}:</strong> {msg.text}
+                                    </li>
+                                ))}
+                                <div ref={messagesEndRef}/>
+                            </ul>
+                            <form id="form" onSubmit={handleSubmit}>
+                                <input id="input" autoComplete="off" value={input} onChange={(e) => setInput(e.target.value)} />
+                                <button type="submit">Send</button>
+                            </form>
+                        </div>
+                    </div>
+                </>
+            )}
+        </div>
     );
 };
 
