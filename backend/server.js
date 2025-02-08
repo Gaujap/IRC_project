@@ -68,6 +68,13 @@ io.on('connection', (socket) => {
         socket.leave(channel);
         socket.emit('updateUserChannels', userChannels[userPseudo]);
     });
+
+    socket.on('addChannel', (channel) => {
+        if (!userChannels[userPseudo].includes(channel)) {
+            userChannels[userPseudo].push(channel);
+            socket.emit('updateUserChannels', userChannels[userPseudo]);
+        }
+    });
 });
 
 server.listen(5000, () => console.log('Server running on port 5000'));
