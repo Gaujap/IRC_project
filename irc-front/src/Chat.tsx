@@ -81,6 +81,11 @@ const Chat: React.FC = () => {
         };
     }, [currentChannel]);
 
+    const handlePseudoChange = (e: React.FormEvent) => {
+        e.preventDefault();
+        socket.emit('setPseudo', pseudo);
+    };
+
     return (
     );
 };
