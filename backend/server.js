@@ -168,6 +168,12 @@ io.on('connection', (socket) => {
             socket.emit('error', `Channel ${channelName} does not exist.`);
         }
     });
+
+    socket.on('disconnect', () => {
+        if (userPseudo) {
+            delete connectedUsers[socket.id];
+        }
+    });
 });
 
 server.listen(5000, () => console.log('Server running on port 5000'));
