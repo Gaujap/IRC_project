@@ -91,6 +91,19 @@ io.on('connection', (socket) => {
             io.to(channel).emit('chat message', { text: message, pseudo: userPseudo, channel });
         }
     });
+
+    socket.on('privateMessage', ({ pseudo, message }) => {
+        const targetSocketId = Object.keys(connectedUsers).find(
+            (socketId) => connectedUsers[socketId] === pseudo
+        );
+
+        if (targetSocketId) {
+            io.to(targetSocketId).emit('chat message', { text: `Private message from ${userPseudo}: ${message}`, pseudo: userPseudo });
+            socket.emit('chat message', { text: `To ${pseudo}: ${message}`, pseudo: userPseudo });
+        } else {
+            socket.emit('error', `User ${pseudo} not found.`);
+        }
+    });
 });
 
 server.listen(5000, () => console.log('Server running on port 5000'));
